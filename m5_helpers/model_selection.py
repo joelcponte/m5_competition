@@ -6,7 +6,8 @@ class M5TimeSeriesSplit:
 
     def __init__(self, n_days, days_columns, fixed_columns=None, 
                  sliding_window=True, return_index=True,
-                 rename=False, method=1, split_train=True):
+                 rename=False, method=1, split_train=True,
+                 do_enumerate=False):
         
         self.n_days = n_days
         self.days_columns = days_columns
@@ -16,18 +17,23 @@ class M5TimeSeriesSplit:
         self.rename = rename
         self.split_train = split_train
         self.method = method
+        self.enumerate = do_enumerate
         
         assert isinstance(days_columns, list)
         assert isinstance(fixed_columns, list)
 
     def split(self, X, y=None):
 
-        for day in range(self.n_days):
+        for i, day in enumerate(range(self.n_days)):
             X_train, y_train, X_test, y_test = self.create_split(day, X, y)
             
             if self.rename:
                 y_test.columns = [f"F{day+1}"]
-            yield X_train, y_train, X_test, y_test
+                
+            if self.enumerate:
+                yield i, X_train, y_train, X_test, y_test
+            else:
+                yield X_train, y_train, X_test, y_test
 
     def create_split(self, day, X, y=None):
         
