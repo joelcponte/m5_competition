@@ -28,12 +28,20 @@ class M5TimeSeriesSplit:
             X_train, y_train, X_test, y_test = self.create_split(day, X, y)
             
             if self.rename:
-                y_test.columns = [f"F{day+1}"]
+                y_test = self.rename_y(y_test, day)
                 
             if self.enumerate:
                 yield i, X_train, y_train, X_test, y_test
             else:
                 yield X_train, y_train, X_test, y_test
+
+    def rename_y(self, y, day):
+        
+        if self.return_index:
+            return f"F{day+1}"
+        else:
+            y.columns = [f"F{day+1}"]
+            return y
 
     def create_split(self, day, X, y=None):
         
@@ -59,7 +67,7 @@ class M5TimeSeriesSplit:
             tr_x = self.fixed_columns + self.days_columns[:-(self.n_days + day + 1)]
             tr_y = [self.days_columns[-(self.n_days + 1)]]
         else:
-            tr_x = self.fixed_columns + self.days_columns[:-(self.n_days + 1)]
+            tr_x = self.fixed_columns + self.days_columns[:-(self.n_days)]
             tr_y = []
         te_x = self.fixed_columns + self.days_columns[te_day0:-(self.n_days)]
         te_y = [self.days_columns[-(self.n_days - day)]]
